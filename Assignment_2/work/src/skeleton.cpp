@@ -76,10 +76,8 @@ void Skeleton::renderBone(bone *b) {
 			glColor3f(0, 1, 1); // Joint
 			cgraSphere(1.2*R);
 
-			glPushMatrix(); {
-				glRotatef(bone.basisRot.z, 0, 0, 1);
-				glRotatef(bone.basisRot.y, 0, 1, 0);
-				glRotatef(bone.basisRot.x, 1, 0, 0);
+			glPushMatrix();   // Draw axis
+			{
 
 				glPushMatrix(); // Z-axis
 				{
@@ -122,13 +120,21 @@ void Skeleton::renderBone(bone *b) {
 
 			}glPopMatrix();
 
+			glTranslatef(bone.boneDir.x*bone.length, bone.boneDir.y*bone.length, bone.boneDir.z*bone.length);
+
+			for (auto &c : bone.children) {
+				renderBone(c);
+			}
+
 		}glPopMatrix();
-		glTranslatef(bone.boneDir.x*bone.length, bone.boneDir.y*bone.length, bone.boneDir.z*bone.length);
 	}
 
-	for (auto &c : bone.children) {
-		renderBone(c);
+	else {
+		for (auto &c : bone.children) {
+			renderBone(c);
+		}
 	}
+
 }
 
 
