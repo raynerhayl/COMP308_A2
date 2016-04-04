@@ -76,46 +76,54 @@ void Skeleton::renderBone(bone *b) {
 			glColor3f(0, 1, 1); // Joint
 			cgraSphere(1.2*R);
 
-			glPushMatrix(); // Z-axis
-			{
-				glColor3f(0, 0, 1);
-				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-				glTranslatef(0, 0, 4 * R);
-				cgraCone(.5*R, .5*R);
-			}glPopMatrix();
+			glPushMatrix(); {
+				glRotatef(bone.basisRot.z, 0, 0, 1);
+				glRotatef(bone.basisRot.y, 0, 1, 0);
+				glRotatef(bone.basisRot.x, 1, 0, 0);
 
-			glPushMatrix(); // Y-axis
-			{
-				glColor3f(0, 1, 0);
-				glRotatef(-90, 1, 0, 0);
-				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-				glTranslatef(0, 0, 4 * R);
-				cgraCone(.5*R, .5*R);
-			}glPopMatrix();
+				glPushMatrix(); // Z-axis
+				{
+					glColor3f(0, 0, 1);
+					cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+					glTranslatef(0, 0, 4 * R);
+					cgraCone(.5*R, .5*R);
+				}glPopMatrix();
 
-			glPushMatrix(); // Y-axis
-			{
+				glPushMatrix(); // Y-axis
+				{
+					glColor3f(0, 1, 0);
+					glRotatef(-90, 1, 0, 0);
+					cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+					glTranslatef(0, 0, 4 * R);
+					cgraCone(.5*R, .5*R);
+				}glPopMatrix();
 
-				glColor3f(1, 0, 0);
-				glRotatef(-90, 0, 1, 0);
-				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-				glTranslatef(0, 0, 4 * R);
-				cgraCone(.5*R, .5*R);
-			}glPopMatrix();// X-axis
+				glPushMatrix(); // Y-axis
+				{
+
+					glColor3f(1, 0, 0);
+					glRotatef(90, 0, 1, 0);
+					cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+					glTranslatef(0, 0, 4 * R);
+					cgraCone(.5*R, .5*R);
+				}glPopMatrix();// X-axis
+			} glPopMatrix();
 
 			glPushMatrix(); // Bone Segment
 			{
 				glColor3f(0.8, 0.8, 0.8);
-				vec3 x = vec3(1, 0, 0);
-				vec3 y = vec3(0, 1, 0);
-				vec3 z = vec3(0, 0, 1);
-				cout << "LENGTH" << std::acos(dot(bone.boneDir, x)) << endl;
+
+				double forwardAngle = (180 * acos(dot(vec3(0, 0, 1), bone.boneDir))) / std::_Pi;
+				vec3 axis = cross(vec3(0, 0, 1), bone.boneDir);
+
+				glRotatef(forwardAngle, axis.x, axis.y, axis.z);
 
 				cgraCylinder(R, R / 3, bone.length);
 
 			}glPopMatrix();
 
 		}glPopMatrix();
+		glTranslatef(bone.boneDir.x*bone.length, bone.boneDir.y*bone.length, bone.boneDir.z*bone.length);
 	}
 
 	for (auto &c : bone.children) {
