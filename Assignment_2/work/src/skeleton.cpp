@@ -27,6 +27,7 @@
 using namespace std;
 using namespace cgra;
 
+
 Skeleton::Skeleton(string filename) {
 	bone b = bone();
 	b.name = "root";
@@ -45,10 +46,18 @@ Skeleton::Skeleton(string filename) {
 void Skeleton::renderSkeleton() {
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-
 	//Actually draw the skeleton
 
+	if (frame >= m_bones[0].rotations.size()) {
+		frame = 0;
+	}
+
 	renderBone(&m_bones[0]);
+
+	frame = frame + 1;
+
+
+	cout << endl;
 
 	// Clean up
 	glPopMatrix();
@@ -67,75 +76,116 @@ void Skeleton::renderSkeleton() {
 // but should go on to draw it's children
 //-------------------------------------------------------------
 void Skeleton::renderBone(bone *b) {
-	bone bone = *b;
-	if (bone.length != 0) {
-		double R = 0.015;
-		glPushMatrix();
+	double R = 0.015;
+	glPushMatrix();
+	{
+
+		glColor3f(0, 1, 1); // Joint
+		cgraSphere(1.2*R);
+
+		glPushMatrix();   // Draw axis
 		{
+			glRotatef(b->basisRot.z, 0, 0, 1);
+			glRotatef(b->basisRot.y, 0, 1, 0);
+			glRotatef(b->basisRot.x, 1, 0, 0); // basis rotations
 
-			glColor3f(0, 1, 1); // Joint
-			cgraSphere(1.2*R);
+			glPushMatrix(); // Z-axis
+			{
+				glColor3f(0, 0, 1);
+				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+				glTranslatef(0, 0, 4 * R);
+				cgraCone(.5*R, .5*R);
+			}glPopMatrix();
 
-			glPushMatrix();   // Draw axis
+			glPushMatrix(); // Y-axis
+			{
+				glColor3f(0, 1, 0);
+				glRotatef(-90, 1, 0, 0);
+				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+				glTranslatef(0, 0, 4 * R);
+				cgraCone(.5*R, .5*R);
+			}glPopMatrix();
+
+			glPushMatrix(); // Y-axis
 			{
 
-				glPushMatrix(); // Z-axis
-				{
-					glColor3f(0, 0, 1);
-					cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-					glTranslatef(0, 0, 4 * R);
-					cgraCone(.5*R, .5*R);
-				}glPopMatrix();
+				glColor3f(1, 0, 0);
+				glRotatef(90, 0, 1, 0);
+				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+				glTranslatef(0, 0, 4 * R);
+				cgraCone(.5*R, .5*R);
+			}glPopMatrix();// X-axis
+		} glPopMatrix();
 
-				glPushMatrix(); // Y-axis
-				{
-					glColor3f(0, 1, 0);
-					glRotatef(-90, 1, 0, 0);
-					cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-					glTranslatef(0, 0, 4 * R);
-					cgraCone(.5*R, .5*R);
-				}glPopMatrix();
+		glRotatef(b->basisRot.z, 0, 0, 1);
+		glRotatef(b->basisRot.y, 0, 1, 0);
+		glRotatef(b->basisRot.x, 1, 0, 0); // basis rotations
 
-				glPushMatrix(); // Y-axis
-				{
+		if (b->rotations.size() > 0) {
 
-					glColor3f(1, 0, 0);
-					glRotatef(90, 0, 1, 0);
-					cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-					glTranslatef(0, 0, 4 * R);
-					cgraCone(.5*R, .5*R);
-				}glPopMatrix();// X-axis
-			} glPopMatrix();
+			double xRot = 0;
+			double yRot = 0;
+			double zRot = 0;
 
+			int index = 0;
+			if (b->freedom & dof_rx) {
+				xRot = b->rotations[frame][index];
+				index = index + 1;
+			}
+
+			if (b->freedom & dof_ry) {
+				yRot = b->rotations[frame][index];
+				index = index + 1;
+			}
+
+			if (b->freedom & dof_rz) {
+				zRot = b->rotations[frame][index];
+				index = index + 1;
+			}
+			if (b->freedom&dof_root) {
+				cout << "root" << endl;
+				xRot = b->rotations[frame][0];
+				yRot = b->rotations[frame][1];
+				zRot = b->rotations[frame][2];
+
+			}
+
+			glRotatef(zRot, 0, 0, 1);
+			glRotatef(yRot, 0, 1, 0);
+			glRotatef(xRot, 1, 0, 0);
+
+		} //amc rotation
+
+		glRotatef(-b->basisRot.x, 1, 0, 0);
+		glRotatef(-b->basisRot.y, 0, 1, 0);
+		glRotatef(-b->basisRot.z, 0, 0, 1); // inverse basis rotations
+
+		if (b->length > 0) {
 			glPushMatrix(); // Bone Segment
 			{
+
 				glColor3f(0.8, 0.8, 0.8);
 
-				double forwardAngle = (180 * acos(dot(vec3(0, 0, 1), bone.boneDir))) / std::_Pi;
-				vec3 axis = cross(vec3(0, 0, 1), bone.boneDir);
+				double forwardAngle = (180 * acos(dot(vec3(0, 0, 1), b->boneDir))) / std::_Pi;
+				vec3 axis = cross(vec3(0, 0, 1), b->boneDir);
 
 				glRotatef(forwardAngle, axis.x, axis.y, axis.z);
 
-				cgraCylinder(R, R / 3, bone.length);
+				cgraCylinder(R, R / 3, b->length);
 
 			}glPopMatrix();
 
-			glTranslatef(bone.boneDir.x*bone.length, bone.boneDir.y*bone.length, bone.boneDir.z*bone.length);
+			glTranslatef(b->boneDir.x*b->length, b->boneDir.y*b->length, b->boneDir.z*b->length);
+		}
 
-			for (auto &c : bone.children) {
-				renderBone(c);
-			}
-
-		}glPopMatrix();
-	}
-
-	else {
-		for (auto &c : bone.children) {
+		for (auto &c : b->children) {
 			renderBone(c);
 		}
-	}
 
+	}glPopMatrix();
 }
+
+
 
 
 // Helper method for retreiving and trimming the next line in a file.
@@ -329,7 +379,6 @@ void Skeleton::readBone(ifstream &file) {
 				length *= (1.0 / 0.45);  // scale by 1/0.45 to get actual measurements
 				length *= 0.0254;      // convert from inches to meters
 				b.length = length;
-				cout << b.length << endl;
 			}
 			else if (head == "dof") {
 				// Degrees of Freedom of the joint (rotation)
@@ -425,9 +474,79 @@ void Skeleton::readHierarchy(ifstream &file) {
 // Complete the following method to load data from an *.amc file
 //-------------------------------------------------------------
 void Skeleton::readAMC(string filename) {
-	// YOUR CODE GOES HERE
-	// ...
+	ifstream file(filename);
 
+	if (!file.is_open()) {
+		cerr << "Failed to open file " << filename << endl;
+		throw runtime_error("Error :: could not open file.");
+	}
+
+	cout << "Reading file" << filename << endl;
+
+	// good() means that failbit, badbit and eofbit are all not set
+	while (file.good()) {
+
+		// Pull out line from file
+		string line = nextLineTrimmed(file);
+		istringstream lineStream(line);
+
+		// Check if it is a comment or just empty
+		if (line.empty() || line[0] == '#' || line[0] == ':') {
+			continue;
+		}
+		else {
+			string name;
+			lineStream >> name;
+			for (int i = 0; i < m_bones.size(); i++) {
+				if (m_bones[i].name == name) {
+					string token;
+					vector<double> frame = vector<double>();
+					while (lineStream.fail() == false) {
+						double angle;
+						lineStream >> token;
+						angle = stod(token);
+
+
+						if (m_bones[i].freedom & dof_rx && frame.size() < 1) {
+							frame.push_back(angle);
+						}
+						else
+
+							if (m_bones[i].freedom & dof_ry && frame.size() < 2) {
+								frame.push_back(angle);
+							}
+							else
+
+
+								if (m_bones[i].freedom & dof_rz && frame.size() < 3) {
+									frame.push_back(angle);
+								}
+								else
+
+
+									if (m_bones[i].freedom & dof_root && frame.size() < 6) {
+										frame.push_back(angle);
+									}
+
+					}
+					m_bones[i].rotations.push_back(frame);
+				}
+			}
+
+			/*for (int i = 0; i < m_bones.size(); i++) {
+				for (int j = 0; j < m_bones[i].rotations.size(); j++) {
+					cout << "NAME : " + m_bones[i].name << "Frame: " << j << " : ";
+					for (int k = 0; k < m_bones[i].rotations[j].size(); k++) {
+						cout << m_bones[i].rotations[j][k] << " ";
+					}
+					cout << endl;
+				}
+			}*/
+		}
+
+	}
+
+	cout << "Completed reading AMC file" << endl;
 }
 
 // YOUR CODE GOES HERE

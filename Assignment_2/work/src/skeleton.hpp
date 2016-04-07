@@ -61,6 +61,8 @@ struct bone {
 	cgra::vec3 translation;       // Translation (Only for the Root)
 	cgra::vec3 rotation_max;      // Maximum value for rotation for this joint (degrees)
 	cgra::vec3 rotation_min;      // Minimum value for rotation for this joint (degrees)
+
+	std::vector< std::vector<double> > rotations = std::vector< std::vector<double>>();  // vector for each frame which contains the roations for that frame
 };
 
 
@@ -68,6 +70,7 @@ class Skeleton {
 
 private:
 	std::vector<bone> m_bones;
+	int frame = 0;
 
 	// Helper method
 	int findBone(std::string);

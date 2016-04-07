@@ -45,6 +45,8 @@ vec2 g_mousePosition;
 float g_pitch = 0;
 float g_yaw = 0;
 float g_zoom = 1.0;
+float g_pan_y = 0;
+float g_pan_x = 0;
 
 
 // Geometry loader and drawer
@@ -102,6 +104,18 @@ void keyCallback(GLFWwindow *win, int key, int scancode, int action, int mods) {
 	// 	<< "action=" << action << "mods=" << mods << endl;
 	// YOUR CODE GOES HERE
 	// ...
+	if (action == 0) {
+		switch (key) {
+		case 87:g_pan_y += 0.05;
+			break;
+		case 83:g_pan_y += -0.05;;
+			break;
+		case 65:g_pan_x += -0.05;
+			break;
+		case 68:g_pan_x += 0.05;
+			break;
+		}
+	}
 }
 
 
@@ -127,9 +141,9 @@ void setupLight() {
 	vec4 ambient(0.2, 0.2, 0.2, 1.0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, direction.dataPointer());
-	glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffuse.dataPointer());
-	glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient.dataPointer());
-	
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse.dataPointer());
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient.dataPointer());
+
 	glEnable(GL_LIGHT0);
 }
 
@@ -146,7 +160,7 @@ void setupCamera(int width, int height) {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glTranslatef(0, 0, -5 * g_zoom);
+	glTranslatef(g_pan_x, g_pan_y, -5 * g_zoom);
 	glRotatef(g_pitch, 1, 0, 0);
 	glRotatef(g_yaw, 0, 1, 0);
 }
@@ -166,7 +180,7 @@ void render(int width, int height) {
 	setupCamera(width, height);
 
 	// Grey/Blueish background
-	glClearColor(0.3f,0.3f,0.4f,1.0f);
+	glClearColor(0.3f, 0.3f, 0.4f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Enable flags for normal rendering
@@ -259,10 +273,11 @@ void APIENTRY debugCallbackARB(GLenum, GLenum, GLuint, GLenum, GLsizei, const GL
 int main(int argc, char **argv) {
 
 	// Check argument list
-	if (argc < 2 ) {
+	if (argc < 2) {
 		cout << "ASF filename expected, eg:" << endl << "    ./a2 priman.asf" << endl;
 		abort(); // Unrecoverable error
-	} else if (argc > 3) {
+	}
+	else if (argc > 3) {
 		cout << "Too many arguments, expected only ASF and AMC filenames, eg:" << endl;
 		cout << "    ./a2 priman.asf priman.amc" << endl;
 		abort(); // Unrecoverable error
@@ -328,7 +343,8 @@ int main(int argc, char **argv) {
 		glDebugMessageCallbackARB(debugCallbackARB, nullptr);
 		glDebugMessageControlARB(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, true);
 		cout << "GL_ARB_debug_output callback installed" << endl;
-	} else {
+	}
+	else {
 		cout << "GL_ARB_debug_output not available. No worries." << endl;
 	}
 
@@ -389,56 +405,56 @@ int main(int argc, char **argv) {
 // function to translate source to string
 string getStringForSource(GLenum source) {
 
-	switch(source) {
-		case GL_DEBUG_SOURCE_API: 
-			return("API");
-		case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-			return("Window System");
-		case GL_DEBUG_SOURCE_SHADER_COMPILER:
-			return("Shader Compiler");
-		case GL_DEBUG_SOURCE_THIRD_PARTY:
-			return("Third Party");
-		case GL_DEBUG_SOURCE_APPLICATION:
-			return("Application");
-		case GL_DEBUG_SOURCE_OTHER:
-			return("Other");
-		default:
-			return("n/a");
+	switch (source) {
+	case GL_DEBUG_SOURCE_API:
+		return("API");
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		return("Window System");
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		return("Shader Compiler");
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		return("Third Party");
+	case GL_DEBUG_SOURCE_APPLICATION:
+		return("Application");
+	case GL_DEBUG_SOURCE_OTHER:
+		return("Other");
+	default:
+		return("n/a");
 	}
 }
 
 // function to translate severity to string
 string getStringForSeverity(GLenum severity) {
 
-	switch(severity) {
-		case GL_DEBUG_SEVERITY_HIGH: 
-			return("HIGH!");
-		case GL_DEBUG_SEVERITY_MEDIUM:
-			return("Medium");
-		case GL_DEBUG_SEVERITY_LOW:
-			return("Low");
-		default:
-			return("n/a");
+	switch (severity) {
+	case GL_DEBUG_SEVERITY_HIGH:
+		return("HIGH!");
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		return("Medium");
+	case GL_DEBUG_SEVERITY_LOW:
+		return("Low");
+	default:
+		return("n/a");
 	}
 }
 
 // function to translate type to string
 string getStringForType(GLenum type) {
-	switch(type) {
-		case GL_DEBUG_TYPE_ERROR: 
-			return("Error");
-		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-			return("Deprecated Behaviour");
-		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-			return("Undefined Behaviour");
-		case GL_DEBUG_TYPE_PORTABILITY:
-			return("Portability Issue");
-		case GL_DEBUG_TYPE_PERFORMANCE:
-			return("Performance Issue");
-		case GL_DEBUG_TYPE_OTHER:
-			return("Other");
-		default:
-			return("n/a");
+	switch (type) {
+	case GL_DEBUG_TYPE_ERROR:
+		return("Error");
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		return("Deprecated Behaviour");
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		return("Undefined Behaviour");
+	case GL_DEBUG_TYPE_PORTABILITY:
+		return("Portability Issue");
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		return("Performance Issue");
+	case GL_DEBUG_TYPE_OTHER:
+		return("Other");
+	default:
+		return("n/a");
 	}
 }
 
@@ -450,10 +466,10 @@ void APIENTRY debugCallbackARB(GLenum source, GLenum type, GLuint id, GLenum sev
 
 	cerr << "Type: " <<
 		getStringForType(type) << "; Source: " <<
-		getStringForSource(source) <<"; ID: " << id << "; Severity: " <<
+		getStringForSource(source) << "; ID: " << id << "; Severity: " <<
 		getStringForSeverity(severity) << endl;
 
 	cerr << message << endl;
-	
+
 	if (type == GL_DEBUG_TYPE_ERROR_ARB) throw runtime_error("");
 }
