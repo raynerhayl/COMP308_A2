@@ -166,7 +166,7 @@ void Skeleton::renderBone(bone *b) {
 
 				glColor3f(0.8, 0.8, 0.8);
 
-				double forwardAngle = (180 * acos(dot(vec3(0, 0, 1), b->boneDir))) / std::_Pi;
+				double forwardAngle = (180 * acos(dot(vec3(0, 0, 1), b->boneDir))) / 3.1412;
 				vec3 axis = cross(vec3(0, 0, 1), b->boneDir);
 
 				glRotatef(forwardAngle, axis.x, axis.y, axis.z);
