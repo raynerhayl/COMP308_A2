@@ -83,43 +83,36 @@ void Skeleton::renderBone(bone *b) {
 		glColor3f(0, 1, 1); // Joint
 		cgraSphere(1.2*R);
 
-		glPushMatrix();   // Draw axis
-		{
-			glRotatef(b->basisRot.z, 0, 0, 1);
-			glRotatef(b->basisRot.y, 0, 1, 0);
-			glRotatef(b->basisRot.x, 1, 0, 0); // basis rotations
-
-			glPushMatrix(); // Z-axis
-			{
-				glColor3f(0, 0, 1);
-				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-				glTranslatef(0, 0, 4 * R);
-				cgraCone(.5*R, .5*R);
-			}glPopMatrix();
-
-			glPushMatrix(); // Y-axis
-			{
-				glColor3f(0, 1, 0);
-				glRotatef(-90, 1, 0, 0);
-				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-				glTranslatef(0, 0, 4 * R);
-				cgraCone(.5*R, .5*R);
-			}glPopMatrix();
-
-			glPushMatrix(); // Y-axis
-			{
-
-				glColor3f(1, 0, 0);
-				glRotatef(90, 0, 1, 0);
-				cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
-				glTranslatef(0, 0, 4 * R);
-				cgraCone(.5*R, .5*R);
-			}glPopMatrix();// X-axis
-		} glPopMatrix();
-
 		glRotatef(b->basisRot.z, 0, 0, 1);
 		glRotatef(b->basisRot.y, 0, 1, 0);
 		glRotatef(b->basisRot.x, 1, 0, 0); // basis rotations
+
+		glPushMatrix(); // Z-axis
+		{
+			glColor3f(0, 0, 1);
+			cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+			glTranslatef(0, 0, 4 * R);
+			cgraCone(.5*R, .5*R);
+		}glPopMatrix();
+
+		glPushMatrix(); // Y-axis
+		{
+			glColor3f(0, 1, 0);
+			glRotatef(-90, 1, 0, 0);
+			cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+			glTranslatef(0, 0, 4 * R);
+			cgraCone(.5*R, .5*R);
+		}glPopMatrix();
+
+		glPushMatrix(); // Y-axis
+		{
+
+			glColor3f(1, 0, 0);
+			glRotatef(90, 0, 1, 0);
+			cgraCylinder(0.3 * R, 0.3 * R, 4 * R);
+			glTranslatef(0, 0, 4 * R);
+			cgraCone(.5*R, .5*R);
+		}glPopMatrix();// X-axis
 
 		if (b->rotations.size() > 0) {
 
@@ -129,24 +122,32 @@ void Skeleton::renderBone(bone *b) {
 
 			int index = 0;
 			if (b->freedom & dof_rx) {
-				xRot = b->rotations[frame][index];
-				index = index + 1;
+				if (b->name != "root") {
+
+					xRot = b->rotations[frame][index];
+					index = index + 1;
+				}
 			}
 
 			if (b->freedom & dof_ry) {
-				yRot = b->rotations[frame][index];
-				index = index + 1;
+				if (b->name != "root") {
+
+					yRot = b->rotations[frame][index];
+					index = index + 1;
+				}
 			}
 
 			if (b->freedom & dof_rz) {
-				zRot = b->rotations[frame][index];
-				index = index + 1;
+				if (b->name != "root") {
+
+					zRot = b->rotations[frame][index];
+					index = index + 1;
+				}
 			}
 			if (b->freedom&dof_root) {
-				cout << "root" << endl;
-				xRot = b->rotations[frame][0];
-				yRot = b->rotations[frame][1];
-				zRot = b->rotations[frame][2];
+				xRot = b->rotations[frame][3];
+				yRot = b->rotations[frame][4];
+				zRot = b->rotations[frame][5];
 
 			}
 
@@ -255,7 +256,7 @@ void Skeleton::readHeading(string headerline, ifstream &file) {
 	istringstream lineStream(headerline);
 	lineStream >> head; // get the first token from the stream
 
-	// remove the ':' from the header name
+						// remove the ':' from the header name
 	if (head[0] == ':')
 		head = head.substr(1);
 
@@ -532,16 +533,6 @@ void Skeleton::readAMC(string filename) {
 					m_bones[i].rotations.push_back(frame);
 				}
 			}
-
-			/*for (int i = 0; i < m_bones.size(); i++) {
-				for (int j = 0; j < m_bones[i].rotations.size(); j++) {
-					cout << "NAME : " + m_bones[i].name << "Frame: " << j << " : ";
-					for (int k = 0; k < m_bones[i].rotations[j].size(); k++) {
-						cout << m_bones[i].rotations[j][k] << " ";
-					}
-					cout << endl;
-				}
-			}*/
 		}
 
 	}
